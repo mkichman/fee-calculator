@@ -1,0 +1,28 @@
+parameters:
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    App\Application\Handler\CalculateFeeHandler:
+        tags:
+            - name: messenger.message_handler
+              handles: App\Application\Command\CalculateFeeCommand
+
+    App\Services\Calculators\TwelveMonthFeeCalculator:
+        tags: [ 'app.fee_calculator' ]
+
+    App\Services\Calculators\TwentyFourMonthFeeCalculator:
+        tags: [ 'app.fee_calculator' ]
+
+    App\Services\FeeCalculatorContext:
+        arguments:
+            $calculators: !tagged_iterator 'app.fee_calculator'
