@@ -34,14 +34,19 @@ final class CalculateFeeCommand extends Command
             ->addArgument('term', InputArgument::REQUIRED, 'Loan term');
     }
 
-    /** @throws ValidationException */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $calculateFeeRequest = new CalculateFeeRequest();
         $calculateFeeRequest->setAmount((int)$input->getArgument('amount'));
         $calculateFeeRequest->setTerm((int)$input->getArgument('term'));
 
-        $this->validateRequestService->validate($calculateFeeRequest);
+        try {
+            $this->validateRequestService->validate($calculateFeeRequest);
+        } catch(ValidationException $exc) {
+            $output->writeln($exc->getMessage());
+
+            return Command::INVALID;
+        }
 
         $result = $this->commandBus->dispatch(
             new CalculateFee(
@@ -50,18 +55,21 @@ final class CalculateFeeCommand extends Command
             )
         );
 
-        /** @var LoanProposal $loanProposal */
         $loanProposal = $result->last(HandledStamp::class)?->getResult();
 
-        $output->writeln(
-            sprintf(
-                'Fee successfully calculated. Term: %d, amount: %d, fee: %d',
-                $loanProposal->getTerm(),
-                $loanProposal->getAmount(),
-                $loanProposal->getFee()
-            )
-        );
+        if($loanProposal instanceof LoanProposal) {
+            $output->writeln(
+                sprintf(
+                    'Fee successfully calculated. Term: %d, amount: %d, fee: %d',
+                    $loanProposal->getTerm(),
+                    $loanProposal->getAmount(),
+                    $loanProposal->getFee()
+                )
+            );
 
-        return Command::SUCCESS;
+            return Command::SUCCESS;
+        }
+
+        return Command::FAILURE;
     }
 }

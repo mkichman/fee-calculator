@@ -8,9 +8,9 @@ use App\Domain\Exception\ValidationException;
 use App\Domain\Interfaces\RequestInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class ValidateRequestService
+readonly class ValidateRequestService
 {
-    public function __construct(protected ValidatorInterface $validator)
+    public function __construct(private ValidatorInterface $validator)
     {
     }
 

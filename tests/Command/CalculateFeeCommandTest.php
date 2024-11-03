@@ -67,7 +67,6 @@ class CalculateFeeCommandTest extends TestCase
 
     public function testExecuteValidationFails(): void
     {
-        $this->expectException(ValidationException::class);
         $validationErrors = $this->createMock(ConstraintViolationList::class);
 
         $this->validateRequestService
